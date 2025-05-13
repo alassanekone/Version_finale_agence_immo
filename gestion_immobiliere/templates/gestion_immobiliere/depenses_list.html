@@ -1,0 +1,57 @@
+{% extends 'gestion_immobiliere/base.html' %}
+
+{% block title %}Liste des dépenses{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Liste des dépenses</h1>
+        <a href="{% url 'ajouter_depense' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvelle dépense
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Propriété</th>
+                    <th>Description</th>
+                    <th>Montant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for depense in depenses %}
+                <tr>
+                    <td>{{ depense.date|date:"d/m/Y" }}</td>
+                    <td>{{ depense.id_propriete }}</td>
+                    <td>{{ depense.description }}</td>
+                    <td>{{ depense.montant }} €</td>
+                    <td>
+                        <a href="{% url 'modifier_depense' depense.pk %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Aucune dépense enregistrée</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

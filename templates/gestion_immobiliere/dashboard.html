@@ -1,0 +1,95 @@
+{% extends 'gestion_immobiliere/base.html' %}
+
+{% block title %}Tableau de bord - Gestion Immobilière{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Tableau de bord</h1>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Propriétés</h5>
+                    <p class="card-text display-4">{{ total_proprietes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Biens</h5>
+                    <p class="card-text display-4">{{ total_biens }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Clients</h5>
+                    <p class="card-text display-4">{{ total_locataires }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Locations actives</h5>
+                    <p class="card-text display-4">{{ locations_actives }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Propriétés récentes -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Propriétés récentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for propriete in proprietes_recentes %}
+                        <a href="{% url 'propriete_detail' propriete.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ propriete.reference }}</h6>
+                                <small>{{ propriete.date_aquisition|date:"d/m/Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ propriete.localisation }}</p>
+                        </a>
+                        {% empty %}
+                        <p class="text-muted">Aucune propriété récente</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Locations récentes -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Locations récentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for location in locations_recentes %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Location #{{ location.id_location }}</h6>
+                                <small>{{ location.date_paiement|date:"d/m/Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ location.prix_mensuel }} XOF / mois</p>
+                        </a>
+                        {% empty %}
+                        <p class="text-muted">Aucune location récente</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

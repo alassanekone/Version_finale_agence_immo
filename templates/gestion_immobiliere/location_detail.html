@@ -1,0 +1,343 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load humanize %}
+
+{% block title %}Détails de l'opération - Gestion Immobilière{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Détails de l'opération #{{ location.id }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'locations' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Détails du contrat</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Statut :</strong> 
+                        {% if location.statut == 'actif' %}
+                            <span class="badge bg-success">{{ location.get_statut_display }}</span>
+                        {% elif location.statut == 'resilié' %}
+                            <span class="badge bg-danger">{{ location.get_statut_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ location.get_statut_display }}</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Type d'opération :</strong> {{ location.get_type_operation_display }}</p>
+                    <p><strong>Montant :</strong> {{ location.montant_location|intcomma }} XOF</p>
+                    <p><strong>Périodicité :</strong> {{ location.get_periodicite_display }}</p>
+                    <p><strong>Nombre de périodes :</strong> {{ location.nombre_periodes }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date de début :</strong> {{ location.date_debut }}</p>
+                    <p><strong>Date de fin :</strong> {{ location.date_fin }}</p>
+                    {% if location.statut == 'resilié' %}
+                    <p><strong>Date de résiliation :</strong> {{ location.date_resiliation }}</p>
+                    <p><strong>Motif de résiliation :</strong> {{ location.motif_resiliation }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">Informations financières</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Caution :</strong> {{ location.caution|intcomma }} XOF</p>
+                    <p><strong>Avances :</strong> {{ location.avance|intcomma }} XOF</p>
+                    <p><strong>Frais d'agence :</strong> {{ location.frais_agence|intcomma }} XOF</p>
+                </div>
+                <div class="col-md-6">
+                    {% if location.statut == 'resilié' and location.caution_restituee %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> La caution a été restituée.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{% url 'locations' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        <div>
+            {% if location.statut == 'actif' %}
+            <a href="{% url 'resilier_location' location.pk %}" class="btn btn-danger">
+                <i class="fas fa-times-circle"></i> Résilier le contrat
+            </a>
+            {% endif %}
+            <a href="{% url 'modifier_location' location.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations générales -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations générales</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Type d'opération</th>
+                            <td>{{ location.get_type_operation_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Bien</th>
+                            <td>{{ location.id_beaux.reference }}</td>
+                        </tr>
+                        <tr>
+                            <th>Client</th>
+                            <td>{{ location.client.nom }} {{ location.client.prenom }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date de début</th>
+                            <td>{{ location.date_debut|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date de fin</th>
+                            <td>{{ location.date_fin|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Montant</th>
+                            <td>{{ location.montant_location|floatformat:0|intcomma }} XOF</td>
+                        </tr>
+                        {% if location.type_operation == 'location' %}
+                        <tr>
+                            <th>Périodicité</th>
+                            <td>{{ location.get_periodicite_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nombre de périodes</th>
+                            <td>{{ location.nombre_periodes }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if location.notes %}
+                        <tr>
+                            <th>Notes</th>
+                            <td>{{ location.notes }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé des paiements -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Résumé des paiements</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Montant total</th>
+                            <td>{{ montant_total|floatformat:0|intcomma }} XOF</td>
+                        </tr>
+                        <tr>
+                            <th>Montant payé</th>
+                            <td>{{ montant_paye|floatformat:0|intcomma }} XOF</td>
+                        </tr>
+                        <tr>
+                            <th>Reste à payer</th>
+                            <td>
+                                <span class="{% if montant_restant > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ montant_restant|floatformat:0|intcomma }} XOF
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPaiement">
+                        <i class="fas fa-plus"></i> Ajouter un paiement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des paiements -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Historique des paiements</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Montant</th>
+                            <th>Mode de paiement</th>
+                            <th>Commentaire</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in paiements %}
+                        <tr>
+                            <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                            <td>{{ paiement.montant|floatformat:0|intcomma }} XOF</td>
+                            <td>{{ paiement.get_mode_paiement_display }}</td>
+                            <td>{{ paiement.commentaire|default:"-" }}</td>
+                            <td>
+                                <form action="{% url 'supprimer_paiement' paiement.id %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun paiement enregistré</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Documents</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDocument">
+                    <i class="fas fa-plus"></i> Ajouter un document
+                </button>
+                <a href="{% if location.type_operation == 'location' %}{% url 'imprimer_contrat_location' location.id %}{% else %}{% url 'imprimer_contrat_vente' location.id %}{% endif %}" class="btn btn-secondary" target="_blank">
+                    <i class="fas fa-print"></i> Imprimer le contrat
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Date d'ajout</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr>
+                            <td>{{ document.nom }}</td>
+                            <td>{{ document.get_type_document_display }}</td>
+                            <td>{{ document.date_creation|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{{ document.fichier.url }}" class="btn btn-sm btn-info" target="_blank">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <form action="{% url 'supprimer_document' document.id_document %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce document ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Aucun document</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Paiement -->
+<div class="modal fade" id="modalPaiement" tabindex="-1" aria-labelledby="modalPaiementLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ajouter_paiement' location.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPaiementLabel">Ajouter un paiement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% for field in form_paiement %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ field.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Document -->
+<div class="modal fade" id="modalDocument" tabindex="-1" aria-labelledby="modalDocumentLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ajouter_document' 'location' location.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDocumentLabel">Ajouter un document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Le formulaire sera injecté ici -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les modals Bootstrap
+    var modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+        new bootstrap.Modal(modal);
+    });
+});
+</script>
+{% endblock %}

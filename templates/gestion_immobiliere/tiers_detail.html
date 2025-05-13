@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Détails du tiers{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>{{ tiers.get_full_name }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Informations personnelles</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Type</th>
+                            <td>{{ tiers.get_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Civilité</th>
+                            <td>{{ tiers.get_civilite_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date de naissance</th>
+                            <td>{{ tiers.date_naissance|default:"Non renseigné" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nationalité</th>
+                            <td>{{ tiers.nationalite|default:"Non renseigné" }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4>Coordonnées</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Adresse</th>
+                            <td>{{ tiers.adresse1 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Téléphone</th>
+                            <td>{{ tiers.telephone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ tiers.mail }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if documents %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Documents</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Type</th>
+                                <th>Date d'upload</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                            <tr>
+                                <td>{{ doc.titre }}</td>
+                                <td>{{ doc.get_type_document_display }}</td>
+                                <td>{{ doc.date_upload }}</td>
+                                <td>
+                                    <a href="{{ doc.fichier.url }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-download"></i> Télécharger
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="{% url 'modifier_tiers' tiers.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{% url 'tiers_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

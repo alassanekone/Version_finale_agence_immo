@@ -1,0 +1,149 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ titre }} - Gestion Immobilière{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">{{ titre }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Informations personnelles -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Informations personnelles</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2">{{ form.civilite|as_crispy_field }}</div>
+                                    <div class="col-md-5">{{ form.nom|as_crispy_field }}</div>
+                                    <div class="col-md-5">{{ form.prenom|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">{{ form.date_naissance|as_crispy_field }}</div>
+                                    <div class="col-md-4">{{ form.lieu_naissance|as_crispy_field }}</div>
+                                    <div class="col-md-4">{{ form.nationalite|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.profession|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.type|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coordonnées -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0">Coordonnées</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.telephone|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.telephone2|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.mail|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.adresse1|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.adresse2|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents d'identité -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h4 class="mb-0">Documents d'identité</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.piece_identite|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.numero_piece_identite|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.date_validite_piece|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations professionnelles -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning">
+                                <h4 class="mb-0">Informations professionnelles</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.nom_employeur|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.telephone_employeur|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.adresse_employeur|as_crispy_field }}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.revenu_mensuel|as_crispy_field }}
+                                            <small class="form-text text-muted">Montant en XOF</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">{{ form.pieces|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h4 class="mb-0">Notes additionnelles</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.notes|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 text-end">
+                                <a href="{% url 'clients' %}" class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour la validation du formulaire -->
+{% block extra_js %}
+<script>
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}
+{% endblock %}

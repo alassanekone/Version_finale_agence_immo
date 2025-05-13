@@ -1,0 +1,117 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier la propriété {{ form.instance.reference }}
+    {% else %}
+        Nouvelle propriété
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        {% if form.instance.pk %}
+                            Modifier la propriété {{ form.instance.reference }}
+                        {% else %}
+                            Nouvelle propriété
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        {% csrf_token %}
+                        
+                        <div class="col-md-6">
+                            {{ form.reference|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.type_beaux|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            {{ form.date_aquisition|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.categorie|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.usage|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-md-8">
+                            {{ form.localisation|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.superficie|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.coordonnees_gps|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+
+                        <!-- Carte pour sélectionner les coordonnées GPS -->
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Sélectionner la position sur la carte</label>
+                            <div id="map" style="height: 400px;"></div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'proprietes' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialisation de la carte
+    var map = L.map('map').setView([46.603354, 1.888334], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker;
+    
+    // Récupérer les coordonnées GPS existantes
+    var coordsField = document.getElementById('id_coordonnees_gps');
+    var coords = coordsField.value.split(',');
+    if (coords.length === 2) {
+        var lat = parseFloat(coords[0].trim());
+        var lon = parseFloat(coords[1].trim());
+        if (!isNaN(lat) && !isNaN(lon)) {
+            marker = L.marker([lat, lon]).addTo(map);
+            map.setView([lat, lon], 13);
+        }
+    }
+
+    // Événement de clic sur la carte
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+        coordsField.value = e.latlng.lat + ', ' + e.latlng.lng;
+    });
+</script>
+{% endblock %}

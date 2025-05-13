@@ -1,0 +1,96 @@
+/* Style général */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Style de la sidebar */
+.sidebar {
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    color: rgba(255,255,255,0.8);
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Style des cartes */
+.card {
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Style des statistiques */
+.stats-card {
+    border-radius: 10px;
+    border: none;
+}
+
+.stats-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Style du tableau de bord */
+.dashboard-stats .card {
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.dashboard-stats .card-body {
+    padding: 20px;
+}
+
+.dashboard-stats .display-4 {
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+/* Style de la carte OpenStreetMap */
+#map {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Style des formulaires */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}
+
+/* Style des boutons */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Style des alertes */
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+/* Style des listes */
+.list-group-item {
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+}
+
+.list-group-item:hover {
+    transform: translateX(5px);
+    background-color: #f8f9fa;
+}

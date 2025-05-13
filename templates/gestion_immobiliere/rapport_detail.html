@@ -1,0 +1,140 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Rapport Financier</h2>
+    
+    <!-- Formulaire de modification -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Modifier la période du rapport</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    {{ form|crispy }}
+                </div>
+                <button type="submit" class="btn btn-primary">Mettre à jour le rapport</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Résumé financier -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Période : {{ rapport.date_debut|date:"d/m/Y" }} - {{ rapport.date_fin|date:"d/m/Y" }}</h4>
+            <a href="?print=1" target="_blank" class="btn btn-secondary">
+                <i class="fas fa-print"></i> Imprimer
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Revenus</h5>
+                            <p class="card-text h3">{{ total_revenus|intcomma }} XOF</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Dépenses</h5>
+                            <p class="card-text h3">{{ total_depenses|intcomma }} XOF</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card {% if solde_net >= 0 %}bg-primary{% else %}bg-warning{% endif %} text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Solde Net</h5>
+                            <p class="card-text h3">{{ solde_net|intcomma }} XOF</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Paiements</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in paiements %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if paiement.location %}
+                                            Paiement de {{ paiement.get_type_paiement_display }} - 
+                                            {{ paiement.location.client }}
+                                        {% else %}
+                                            {{ paiement.notes|default:"" }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-success">{{ paiement.montant|intcomma }} XOF</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucun paiement pour cette période</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Dépenses</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depenses %}
+                                <tr>
+                                    <td>{{ depense.date|date:"d/m/Y" }}</td>
+                                    <td>{{ depense.description }}</td>
+                                    <td class="text-danger">{{ depense.montant|intcomma }} XOF</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucune dépense pour cette période</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if rapport.commentaires %}
+            <div class="mt-4">
+                <h4>Commentaires</h4>
+                <p>{{ rapport.commentaires|linebreaks }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'comptabilite' %}" class="btn btn-secondary">Retour au tableau de bord</a>
+        <a href="{% url 'generer_rapport' %}" class="btn btn-primary">Générer un nouveau rapport</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Financier - {{ rapport.date_debut|date:"d/m/Y" }} au {{ rapport.date_fin|date:"d/m/Y" }}</title>
+    <style>
+        @media print {
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+            .header p {
+                margin: 5px 0;
+                color: #666;
+            }
+            .summary {
+                margin: 20px 0;
+                padding: 20px;
+                border: 1px solid #ddd;
+            }
+            .summary-item {
+                margin: 10px 0;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            .table th, .table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .table th {
+                background-color: #f5f5f5;
+            }
+            .text-success {
+                color: green;
+            }
+            .text-danger {
+                color: red;
+            }
+            .footer {
+                margin-top: 50px;
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+            }
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Rapport Financier</h1>
+        <p>Période : {{ rapport.date_debut|date:"d/m/Y" }} au {{ rapport.date_fin|date:"d/m/Y" }}</p>
+        <p>Généré le : {{ rapport.date_generation|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-item">
+            <strong>Total Revenus :</strong> {{ rapport.total_revenus|floatformat:0|intcomma }} XOF
+        </div>
+        <div class="summary-item">
+            <strong>Total Dépenses :</strong> {{ rapport.total_depenses|floatformat:0|intcomma }} XOF
+        </div>
+        <div class="summary-item">
+            <strong>Solde Net :</strong> {{ rapport.solde_net|floatformat:0|intcomma }} XOF
+        </div>
+    </div>
+
+    <h3>Détail des Paiements</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paiement in paiements %}
+            <tr>
+                <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                <td>
+                    {% if paiement.location %}
+                        Paiement de {{ paiement.get_type_paiement_display }} - 
+                        {{ paiement.location.client }}
+                    {% else %}
+                        {{ paiement.notes|default:"" }}
+                    {% endif %}
+                </td>
+                <td class="text-success">{{ paiement.montant|floatformat:0|intcomma }} XOF</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center;">Aucun paiement pour cette période</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Détail des Dépenses</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for depense in depenses %}
+            <tr>
+                <td>{{ depense.date|date:"d/m/Y" }}</td>
+                <td>{{ depense.description }}</td>
+                <td class="text-danger">{{ depense.montant|floatformat:0|intcomma }} XOF</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center;">Aucune dépense pour cette période</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if rapport.commentaires %}
+    <div class="comments">
+        <h3>Commentaires</h3>
+        <p>{{ rapport.commentaires|linebreaks }}</p>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Agence Immobilière - Rapport généré automatiquement</p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

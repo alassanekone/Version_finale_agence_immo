@@ -1,0 +1,101 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load humanize %}
+
+{% block title %}Liste des Biens - Gestion Immobilière{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Liste des Biens</h1>
+        <a href="{% url 'ajouter_bien' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau Bien
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Type</th>
+                            <th>Localisation</th>
+                            <th>Superficie</th>
+                            <th>Prix</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bien in biens %}
+                        <tr>
+                            <td>{{ bien.reference }}</td>
+                            <td>{{ bien.id_propriete.type_beaux }}</td>
+                            <td>{{ bien.id_propriete.localisation }}</td>
+                            <td>{{ bien.id_propriete.superficie }} m²</td>
+                            <td>{{ bien.prix }} XOF</td>
+                            <td>
+                                <span class="badge {% if bien.statut == 'disponible' %}bg-success{% elif bien.statut == 'loue' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ bien.get_statut_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'propriete_detail' bien.id_propriete.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'modifier_bien' bien.pk %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                Aucun bien enregistré.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" name="statut">
+                        <option value="">Tous</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="loue">Loué</option>
+                        <option value="vendu">Vendu</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prix minimum</label>
+                    <input type="number" class="form-control" name="prix_min">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prix maximum</label>
+                    <input type="number" class="form-control" name="prix_max">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

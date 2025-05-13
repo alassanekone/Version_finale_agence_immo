@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} un bien</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.id_propriete|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.reference|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.prix|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.statut|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Documents</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if form.instance.pk %}
+                                <div class="mb-3">
+                                    <h6>Documents actuels :</h6>
+                                    <ul class="list-group">
+                                        {% for doc in form.instance.documents.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ doc.titre }}
+                                            <div>
+                                                <a href="{{ doc.fichier.url }}" class="btn btn-sm btn-info" target="_blank">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                                <a href="{% url 'supprimer_document' doc.pk %}" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Supprimer
+                                                </a>
+                                            </div>
+                                        </li>
+                                        {% empty %}
+                                        <li class="list-group-item">Aucun document</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <a href="{% url 'ajouter_document' 'beaux' form.instance.pk %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Ajouter un document
+                                </a>
+                                {% else %}
+                                <p class="text-muted">Vous pourrez ajouter des documents après avoir créé le bien.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-3">
+                            <a href="{% url 'biens' %}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.pk %}Modifier{% else %}Enregistrer{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

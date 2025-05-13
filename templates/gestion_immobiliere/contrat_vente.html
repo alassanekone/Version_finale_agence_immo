@@ -1,0 +1,118 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Contrat de Vente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 2cm;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2cm;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 1cm;
+        }
+        .section {
+            margin-bottom: 1cm;
+        }
+        .signature {
+            margin-top: 2cm;
+        }
+        .footer {
+            margin-top: 2cm;
+            text-align: center;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            margin-top: 1cm;
+        }
+        td {
+            padding: 10px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CONTRAT DE VENTE IMMOBILIÈRE</h1>
+        <p>{{ date|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="section">
+        <h2>ENTRE LES SOUSSIGNÉS</h2>
+        <p><strong>Le Vendeur :</strong></p>
+        <p>Agence Immobilière AGENCE IMMO BNDA</p>
+        <p>Représentée par son Directeur</p>
+        <p>Adresse : Hamdallaye ACI 2000, Bamako, Mali</p>
+
+        <p><strong>L'Acheteur :</strong></p>
+        <p>{{ vente.client.civilite }} {{ vente.client.nom }} {{ vente.client.prenom }}</p>
+        <p>{{ vente.client.adresse1 }}</p>
+        {% if vente.client.adresse2 %}
+        <p>{{ vente.client.adresse2 }}</p>
+        {% endif %}
+        <p>Téléphone : {{ vente.client.telephone }}</p>
+        {% if vente.client.telephone2 %}
+        <p>Téléphone 2 : {{ vente.client.telephone2 }}</p>
+        {% endif %}
+        <p>Email : {{ vente.client.mail }}</p>
+    </div>
+
+    <div class="section">
+        <h2>OBJET DE LA VENTE</h2>
+        <p>Le vendeur vend à l'acheteur qui accepte le bien immobilier dont la désignation suit :</p>
+        <p><strong>Référence du bien :</strong> {{ vente.id_beaux.reference }}</p>
+        <p><strong>Type de bien :</strong> {{ vente.id_beaux.id_propriete.get_type_beaux_display }}</p>
+        <p><strong>Localisation :</strong> {{ vente.id_beaux.id_propriete.localisation }}</p>
+        <p><strong>Description :</strong> {{ vente.id_beaux.id_propriete.description }}</p>
+        <p><strong>Superficie :</strong> {{ vente.id_beaux.id_propriete.superficie }} m²</p>
+    </div>
+
+    <div class="section">
+        <h2>PRIX DE VENTE</h2>
+        <p>La présente vente est consentie et acceptée moyennant le prix de {{ vente.montant_vente|intcomma }} XOF.</p>
+        <p><strong>Frais d'agence :</strong> {{ vente.frais_agence|intcomma }} XOF</p>
+    </div>
+
+    <div class="section">
+        <h2>MODALITÉS DE PAIEMENT</h2>
+        <p>Le paiement du prix sera effectué selon les modalités suivantes :</p>
+        <p><strong>Avance versée :</strong> {{ vente.avance|intcomma }} XOF</p>
+        <p><strong>Reste à payer :</strong> {{ vente.montant_restant|intcomma }} XOF</p>
+        <p><strong>Date limite de paiement :</strong> {{ vente.date_fin|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="section">
+        <h2>TRANSFERT DE PROPRIÉTÉ</h2>
+        <p>Le transfert de propriété sera effectif à compter de la signature du présent contrat et du paiement intégral du prix de vente.</p>
+    </div>
+
+    <div class="signature">
+        <p>Fait à Bamako, le {{ date|date:"d/m/Y" }}</p>
+        <table>
+            <tr>
+                <td width="50%">
+                    <p>Le Vendeur</p>
+                    <p>(signature et cachet)</p>
+                </td>
+                <td width="50%">
+                    <p>L'Acheteur</p>
+                    <p>(signature précédée de la mention "Lu et approuvé")</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Page 1/1 - AGENCE IMMO BNDA - Hamdallaye ACI 2000, Bamako, Mali</p>
+    </div>
+</body>
+</html>

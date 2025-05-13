@@ -1,0 +1,112 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Contrat de Location</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 2cm;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2cm;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 1cm;
+        }
+        .section {
+            margin-bottom: 1cm;
+        }
+        .signature {
+            margin-top: 2cm;
+        }
+        .footer {
+            margin-top: 2cm;
+            text-align: center;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            margin-top: 1cm;
+        }
+        td {
+            padding: 10px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CONTRAT DE LOCATION</h1>
+        <p>{{ date|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="section">
+        <h2>ENTRE LES SOUSSIGNÉS</h2>
+        <p><strong>Le Bailleur :</strong></p>
+        <p>Agence Immobilière AGENCE IMMO BNDA</p>
+        <p>Représentée par son Directeur</p>
+        <p>Adresse : Hamdallaye ACI 2000, Bamako, Mali</p>
+
+        <p><strong>Le Locataire :</strong></p>
+        <p>{{ location.client.civilite }} {{ location.client.nom }} {{ location.client.prenom }}</p>
+        <p>{{ location.client.adresse1 }}</p>
+        {% if location.client.adresse2 %}
+        <p>{{ location.client.adresse2 }}</p>
+        {% endif %}
+        <p>Téléphone : {{ location.client.telephone }}</p>
+        {% if location.client.telephone2 %}
+        <p>Téléphone 2 : {{ location.client.telephone2 }}</p>
+        {% endif %}
+        <p>Email : {{ location.client.mail }}</p>
+    </div>
+
+    <div class="section">
+        <h2>OBJET DU CONTRAT</h2>
+        <p>Le présent contrat a pour objet la location d'un bien immobilier dont les caractéristiques sont les suivantes :</p>
+        <p><strong>Référence du bien :</strong> {{ location.id_beaux.reference }}</p>
+        <p><strong>Type de bien :</strong> {{ location.id_beaux.id_propriete.get_type_beaux_display }}</p>
+        <p><strong>Localisation :</strong> {{ location.id_beaux.id_propriete.localisation }}</p>
+        <p><strong>Description :</strong> {{ location.id_beaux.id_propriete.description }}</p>
+        <p><strong>Superficie :</strong> {{ location.id_beaux.id_propriete.superficie }} m²</p>
+    </div>
+
+    <div class="section">
+        <h2>CONDITIONS FINANCIÈRES</h2>
+        <p><strong>Loyer :</strong> {{ location.montant_location|intcomma }} XOF par {{ location.get_periodicite_display|lower }}</p>
+        <p><strong>Caution :</strong> {{ location.caution|intcomma }} XOF</p>
+        <p><strong>Avance :</strong> {{ location.avance|intcomma }} XOF</p>
+        <p><strong>Frais d'agence :</strong> {{ location.frais_agence|intcomma }} XOF</p>
+    </div>
+
+    <div class="section">
+        <h2>DURÉE DU CONTRAT</h2>
+        <p>Le présent contrat est conclu pour une durée de {{ location.nombre_periodes }} {{ location.get_periodicite_display|lower }}s à compter du {{ location.date_debut|date:"d/m/Y" }}{% if location.date_fin %} jusqu'au {{ location.date_fin|date:"d/m/Y" }}{% endif %}.</p>
+    </div>
+
+    <div class="signature">
+        <p>Fait à Bamako, le {{ date|date:"d/m/Y" }}</p>
+        <table>
+            <tr>
+                <td width="50%">
+                    <p>Le Bailleur</p>
+                    <p>(signature et cachet)</p>
+                </td>
+                <td width="50%">
+                    <p>Le Locataire</p>
+                    <p>(signature précédée de la mention "Lu et approuvé")</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Page 1/1 - AGENCE IMMO BNDA - Hamdallaye ACI 2000, Bamako, Mali</p>
+    </div>
+</body>
+</html>

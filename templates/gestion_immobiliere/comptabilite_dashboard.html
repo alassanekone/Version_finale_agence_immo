@@ -1,0 +1,211 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Tableau de Bord Comptabilité</h2>
+    
+    <!-- Résumé du mois -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Résumé du Mois</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5>Revenus</h5>
+                                    <p class="h4">{{ paiements_mois|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5>Dépenses</h5>
+                                    <p class="h4">{{ depenses_mois|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card {% if solde_mois >= 0 %}bg-primary{% else %}bg-warning{% endif %} text-white">
+                                <div class="card-body">
+                                    <h5>Solde</h5>
+                                    <p class="h4">{{ solde_mois|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Résumé de l'année -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Résumé de l'Année</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5>Revenus</h5>
+                                    <p class="h4">{{ paiements_annee|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5>Dépenses</h5>
+                                    <p class="h4">{{ depenses_annee|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card {% if solde_annee >= 0 %}bg-primary{% else %}bg-warning{% endif %} text-white">
+                                <div class="card-body">
+                                    <h5>Solde</h5>
+                                    <p class="h4">{{ solde_annee|floatformat:0|intcomma }} XOF</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Derniers paiements -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Derniers Paiements</h4>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-sm btn-primary">Voir tout</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in derniers_paiements %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if paiement.location %}
+                                            Paiement de {{ paiement.get_type_paiement_display }} - 
+                                            {{ paiement.location.client }}
+                                        {% else %}
+                                            {{ paiement.notes|default:"" }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-success">{{ paiement.montant|floatformat:0|intcomma }} XOF</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucun paiement récent</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dernières dépenses -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Dernières Dépenses</h4>
+                    <a href="{% url 'liste_depenses' %}" class="btn btn-sm btn-primary">Voir tout</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in dernieres_depenses %}
+                                <tr>
+                                    <td>{{ depense.date|date:"d/m/Y" }}</td>
+                                    <td>{{ depense.description }}</td>
+                                    <td class="text-danger">{{ depense.montant|floatformat:0|intcomma }} XOF</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucune dépense récente</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Derniers rapports -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Derniers Rapports Financiers</h4>
+            <a href="{% url 'generer_rapport' %}" class="btn btn-primary">Générer un rapport</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Période</th>
+                            <th>Date de génération</th>
+                            <th>Total Revenus</th>
+                            <th>Total Dépenses</th>
+                            <th>Solde Net</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rapport in derniers_rapports %}
+                        <tr>
+                            <td>{{ rapport.date_debut|date:"d/m/Y" }} - {{ rapport.date_fin|date:"d/m/Y" }}</td>
+                            <td>{{ rapport.date_generation|date:"d/m/Y H:i" }}</td>
+                            <td class="text-success">{{ rapport.total_revenus|floatformat:0|intcomma }} XOF</td>
+                            <td class="text-danger">{{ rapport.total_depenses|floatformat:0|intcomma }} XOF</td>
+                            <td class="{% if rapport.solde_net >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                                {{ rapport.solde_net|floatformat:0|intcomma }} XOF
+                            </td>
+                            <td>
+                                <a href="{% url 'rapport_detail' rapport.pk %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun rapport disponible</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

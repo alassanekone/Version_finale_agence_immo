@@ -1,0 +1,268 @@
+
+{% extends 'gestion_immobiliere/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Modifier{% else %}Nouvelle{% endif %} Opération{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{% if form.instance.pk %}Modifier{% else %}Nouvelle{% endif %} Opération</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Type d'opération -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Type d'opération</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">{{ form.type_operation|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations principales -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Informations principales</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.id_beaux|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.client|as_crispy_field }}</div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">{{ form.montant_location|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.date_debut|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations financières -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h4 class="mb-0">Informations financières</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">{{ form.caution|as_crispy_field }}</div>
+                                    <div class="col-md-4">{{ form.avance|as_crispy_field }}</div>
+                                    <div class="col-md-4">{{ form.frais_agence|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Détails du contrat (visible uniquement pour les locations) -->
+                        <div id="details-location" class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0">Détails de la location</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">{{ form.periodicite|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.nombre_periodes|as_crispy_field }}</div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">{{ form.date_fin|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h4 class="mb-0">Notes</h4>
+                            </div>
+                            <div class="card-body">
+                                {{ form.notes|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'locations' %}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </form>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const typeOperationSelect = document.getElementById('id_type_operation');
+                        const bienSelect = document.getElementById('id_id_beaux');
+                        const montantInput = document.getElementById('id_montant_location');
+                        const periodiciteSelect = document.getElementById('id_periodicite');
+                        const dateDebutInput = document.getElementById('id_date_debut');
+                        const dateFinInput = document.getElementById('id_date_fin');
+                        const nombrePeriodesInput = document.getElementById('id_nombre_periodes');
+                        const detailsLocationDiv = document.getElementById('details-location');
+
+                        // Fonction pour gérer l'affichage en fonction du type d'opération
+                        function gererTypeOperation() {
+                            const isVente = typeOperationSelect.value === 'vente';
+                            detailsLocationDiv.style.display = isVente ? 'none' : 'block';
+                            
+                            if (isVente) {
+                                // Pour une vente, la date de fin est égale à la date de début
+                                dateFinInput.value = dateDebutInput.value;
+                                periodiciteSelect.value = 'mensuel';
+                                nombrePeriodesInput.value = '1';
+                            }
+                        }
+
+                        // Fonction pour récupérer le prix du bien
+                        function recupererPrixBien() {
+                            const bienId = bienSelect.value;
+                            if (bienId) {
+                                fetch(`/bien/${bienId}/prix/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.prix) {
+                                            montantInput.value = data.prix;
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Erreur:', error);
+                                        montantInput.value = '';
+                                    });
+                            } else {
+                                montantInput.value = '';
+                            }
+                        }
+
+                        // Fonction pour ajouter des mois à une date
+                        function ajouterMois(date, nombreMois) {
+                            const jourInitial = date.getDate();
+                            date.setDate(1);
+                            date.setMonth(date.getMonth() + nombreMois);
+                            const dernierJourDuMois = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+                            date.setDate(Math.min(jourInitial, dernierJourDuMois));
+                            return date;
+                        }
+
+                        // Fonction pour calculer la date de fin
+                        function calculerDateFin() {
+                            if (typeOperationSelect.value === 'vente') {
+                                dateFinInput.value = dateDebutInput.value;
+                                return;
+                            }
+
+                            const dateDebut = new Date(dateDebutInput.value);
+                            const nombrePeriodes = parseInt(nombrePeriodesInput.value) || 0;
+                            
+                            if (dateDebut && !isNaN(dateDebut) && nombrePeriodes > 0) {
+                                let nombreMois = 0;
+                                switch(periodiciteSelect.value) {
+                                    case 'mensuel':
+                                        nombreMois = nombrePeriodes;
+                                        break;
+                                    case 'trimestriel':
+                                        nombreMois = nombrePeriodes * 3;
+                                        break;
+                                    case 'semestriel':
+                                        nombreMois = nombrePeriodes * 6;
+                                        break;
+                                    case 'annuel':
+                                        nombreMois = nombrePeriodes * 12;
+                                        break;
+                                }
+
+                                let dateFin = ajouterMois(new Date(dateDebut), nombreMois);
+                                dateFinInput.value = dateFin.toISOString().split('T')[0];
+                            }
+                        }
+
+                        // Fonction pour calculer le nombre de périodes
+                        function calculerNombrePeriodes() {
+                            if (typeOperationSelect.value === 'vente') {
+                                nombrePeriodesInput.value = '1';
+                                return;
+                            }
+
+                            const dateDebut = new Date(dateDebutInput.value);
+                            const dateFin = new Date(dateFinInput.value);
+                            
+                            if (dateDebut && dateFin && !isNaN(dateDebut) && !isNaN(dateFin)) {
+                                const diffMois = (dateFin.getFullYear() - dateDebut.getFullYear()) * 12 + 
+                                               (dateFin.getMonth() - dateDebut.getMonth());
+                                
+                                let nombrePeriodes = 0;
+                                switch(periodiciteSelect.value) {
+                                    case 'mensuel':
+                                        nombrePeriodes = Math.max(1, diffMois);
+                                        break;
+                                    case 'trimestriel':
+                                        nombrePeriodes = Math.max(1, Math.ceil(diffMois / 3));
+                                        break;
+                                    case 'semestriel':
+                                        nombrePeriodes = Math.max(1, Math.ceil(diffMois / 6));
+                                        break;
+                                    case 'annuel':
+                                        nombrePeriodes = Math.max(1, Math.ceil(diffMois / 12));
+                                        break;
+                                }
+                                
+                                nombrePeriodesInput.value = nombrePeriodes;
+                            }
+                        }
+
+                        // Événements
+                        typeOperationSelect.addEventListener('change', function() {
+                            gererTypeOperation();
+                            calculerDateFin();
+                        });
+
+                        bienSelect.addEventListener('change', recupererPrixBien);
+
+                        dateDebutInput.addEventListener('change', function() {
+                            if (typeOperationSelect.value === 'vente') {
+                                dateFinInput.value = this.value;
+                            } else if (nombrePeriodesInput.value) {
+                                calculerDateFin();
+                            } else if (dateFinInput.value) {
+                                calculerNombrePeriodes();
+                            }
+                        });
+
+                        dateFinInput.addEventListener('change', function() {
+                            if (typeOperationSelect.value !== 'vente' && dateDebutInput.value) {
+                                calculerNombrePeriodes();
+                            }
+                        });
+
+                        nombrePeriodesInput.addEventListener('change', function() {
+                            if (typeOperationSelect.value !== 'vente' && dateDebutInput.value) {
+                                calculerDateFin();
+                            }
+                        });
+
+                        periodiciteSelect.addEventListener('change', function() {
+                            if (typeOperationSelect.value !== 'vente') {
+                                if (dateDebutInput.value && nombrePeriodesInput.value) {
+                                    calculerDateFin();
+                                } else if (dateDebutInput.value && dateFinInput.value) {
+                                    calculerNombrePeriodes();
+                                }
+                            }
+                        });
+
+                        // Initialisation
+                        gererTypeOperation();
+                        
+                        // Si un bien est déjà sélectionné
+                        if (bienSelect.value) {
+                            recupererPrixBien();
+                        }
+                    });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Ajouter un document
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        Ajouter un document
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>Informations importantes</h5>
+                        <ul class="mb-0">
+                            <li>Taille maximale : 10 MB</li>
+                            <li>Formats acceptés : PDF, JPG, JPEG, PNG, DOC, DOCX</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="row g-3">
+                        {% csrf_token %}
+                        
+                        <div class="col-md-6">
+                            {{ form.titre|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.type_document|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.fichier|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if object.documents.exists %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Documents existants</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Date d'ajout</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in object.documents.all %}
+                                <tr>
+                                    <td>{{ doc.titre }}</td>
+                                    <td>{{ doc.get_type_document_display }}</td>
+                                    <td>{{ doc.date_upload|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ doc.fichier.url }}" class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form method="post" action="{% url 'supprimer_document' doc.id_document %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce document ?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucun document</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Prévisualisation du fichier
+    document.getElementById('id_fichier').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale : 10 MB');
+                this.value = '';
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier la dépense #{{ form.instance.id_depense }}
+    {% else %}
+        Nouvelle dépense
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        {% if form.instance.pk %}
+                            Modifier la dépense #{{ form.instance.id_depense }}
+                        {% else %}
+                            Nouvelle dépense
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        {% csrf_token %}
+                        
+                        <div class="col-md-6">
+                            {{ form.id_propriete|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.date|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.montant|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'depenses' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if form.instance.pk %}
+            <!-- Informations sur la propriété -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations sur la propriété</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Référence :</strong> {{ form.instance.propriete.reference }}</p>
+                            <p><strong>Type :</strong> {{ form.instance.propriete.get_type_beaux_display }}</p>
+                            <p><strong>Superficie :</strong> {{ form.instance.propriete.superficie }} m²</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Catégorie :</strong> {{ form.instance.propriete.get_categorie_display }}</p>
+                            <p><strong>Usage :</strong> {{ form.instance.propriete.get_usage_display }}</p>
+                            <p><strong>Localisation :</strong> {{ form.instance.propriete.localisation }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résumé des dépenses -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Résumé des dépenses pour cette propriété</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Total des dépenses</h6>
+                                    <h3 class="card-text">{{ total_depenses }} XOF</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Dépenses ce mois</h6>
+                                    <h3 class="card-text">{{ depenses_mois }} XOF</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Moyenne mensuelle</h6>
+                                    <h3 class="card-text">{{ moyenne_mensuelle }} XOF</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depenses_recentes %}
+                                <tr>
+                                    <td>{{ depense.date|date:"d/m/Y" }}</td>
+                                    <td>{{ depense.description }}</td>
+                                    <td>{{ depense.montant }} XOF</td>
+                                    <td>
+                                        <a href="{% url 'modifier_depense' depense.id_depense %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune dépense récente</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mise à jour dynamique des informations de la propriété
+    document.getElementById('id_id_propriete').addEventListener('change', function() {
+        // Ici, vous pourriez ajouter une requête AJAX pour charger les informations
+        // de la propriété sélectionnée et les afficher dynamiquement
+    });
+
+    // Formatage automatique du montant
+    document.getElementById('id_montant').addEventListener('blur', function() {
+        var value = parseFloat(this.value);
+        if (!isNaN(value)) {
+            this.value = value.toFixed(2);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends 'gestion_immobiliere/base.html' %}
+{% load static %}
+
+{% block title %}{{ propriete.nom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête de la propriété -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ propriete.nom }}</h1>
+            <p class="lead">{{ propriete.adresse }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'modifier_propriete' propriete.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{% url 'ajouter_document' 'propriete' propriete.pk %}" class="btn btn-success">
+                <i class="fas fa-file-upload"></i> Ajouter un document
+            </a>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Biens disponibles</h5>
+                    <p class="display-4">{{ biens_disponibles }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus mensuels</h5>
+                    <p class="display-4">{{ revenus_mensuels }} €</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total dépenses</h5>
+                    <p class="display-4">{{ total_depenses }} €</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Nombre de biens</h5>
+                    <p class="display-4">{{ biens.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations détaillées -->
+    <div class="row">
+        <!-- Détails de la propriété -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Informations</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Type de propriété :</th>
+                            <td>{{ propriete.type_propriete }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date d'acquisition :</th>
+                            <td>{{ propriete.date_aquisition }}</td>
+                        </tr>
+                        <tr>
+                            <th>Prix d'acquisition :</th>
+                            <td>{{ propriete.prix_aquisition }} €</td>
+                        </tr>
+                        <tr>
+                            <th>Surface :</th>
+                            <td>{{ propriete.surface }} m²</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des biens -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Biens</h3>
+                    <a href="{% url 'ajouter_bien' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Numéro</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bien in biens %}
+                                <tr>
+                                    <td>{{ bien.numero }}</td>
+                                    <td>{{ bien.type_bien }}</td>
+                                    <td>
+                                        <span class="badge {% if bien.statut == 'disponible' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ bien.statut }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'modifier_bien' bien.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucun bien enregistré</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Dernières dépenses -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Dernières dépenses</h3>
+                    <a href="{% url 'ajouter_depense' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depenses %}
+                                <tr>
+                                    <td>{{ depense.date|date:"d/m/Y" }}</td>
+                                    <td>{{ depense.description }}</td>
+                                    <td>{{ depense.montant }} €</td>
+                                    <td>
+                                        <a href="{% url 'modifier_depense' depense.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune dépense enregistrée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Documents</h3>
+                    <a href="{% url 'ajouter_document' 'propriete' propriete.pk %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                <tr>
+                                    <td>{{ document.titre }}</td>
+                                    <td>{{ document.get_type_display }}</td>
+                                    <td>
+                                        <a href="{{ document.fichier.url }}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_document' document.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucun document</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
