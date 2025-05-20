@@ -184,6 +184,9 @@ class LocationForm(forms.ModelForm):
             'frais_agence': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'notes': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }
+        labels = {
+            'id_beaux': 'Référence du Bien',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
