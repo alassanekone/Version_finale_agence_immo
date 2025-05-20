@@ -120,6 +120,11 @@ class Location(models.Model):
         ('location', 'Location'),
         ('vente', 'Vente'),
     ]
+    STATUT_CHOICES = [
+        ('Actif', 'Actif'),
+        ('Résilié', 'Résilié'),
+        ('Terminé', 'Terminé'),
+    ]
     PERIODICITE_CHOICES = [
         ('mensuel', 'Mensuel'),
         ('trimestriel', 'Trimestriel'),
@@ -132,9 +137,11 @@ class Location(models.Model):
         ('terminé', 'Terminé'),
     ]
 
-    id_beaux = models.ForeignKey(Beaux, on_delete=models.CASCADE, verbose_name="Bien immobilier", null=True, blank=True)
+    id = models.AutoField(primary_key=True)
     client = models.ForeignKey(Tiers, on_delete=models.CASCADE, null=True, blank=True)
+    id_beaux = models.ForeignKey(Beaux, on_delete=models.CASCADE, null=True, blank=True)
     type_operation = models.CharField(max_length=20, choices=TYPE_OPERATION_CHOICES, default='location')
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='active')
     date_debut = models.DateField(verbose_name="Date de début")
     date_fin = models.DateField(verbose_name="Date de fin", null=True, blank=True)
     montant_location = models.IntegerField(verbose_name="Montant de la location/vente (XOF)")

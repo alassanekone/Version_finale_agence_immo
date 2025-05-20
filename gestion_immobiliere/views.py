@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count, Avg, Max
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse, Http404
 from django.core.exceptions import ValidationError
@@ -21,50 +21,63 @@ from decimal import Decimal
 
 @login_required
 def dashboard(request):
-    """Vue pour le tableau de bord"""
-    from django.db.models import Sum, Count
+    # Dates de référence
+    today = timezone.now().date()
+    date_90_jours = today + timedelta(days=90)
     
-    # Statistiques des locations
-    revenus_mensuels = Location.objects.filter(type_operation='location').aggregate(
-        total=Sum('montant_location')
-    )['total'] or 0
-
-    # Statistiques des ventes
-    revenus_ventes = Location.objects.filter(type_operation='vente').aggregate(
-        total=Sum('montant_location')
-    )['total'] or 0
-
-    # Nombre de biens par type
-    biens_par_type = Propriete.objects.values('type_beaux').annotate(
-        total=Count('id_propriete')
-    ).order_by('type_beaux')
-
-    # Nombre de clients par type
-    clients_par_type = Tiers.objects.values('type').annotate(
-        total=Count('id_tiers')
-    ).order_by('type')
-
-    # Statistiques générales
-    total_proprietes = Propriete.objects.count()
-    total_biens = Beaux.objects.count()
-    total_tiers = Tiers.objects.count()
-    locations_actives = Location.objects.filter(type_operation='location').count()
-
-    # Dernières locations
-    dernieres_locations = Location.objects.select_related('bien', 'client').order_by('-created_at')[:5]
-
+    # Contrats expirant dans les 90 prochains jours
+    contrats_expiration = []
+    contrats_retard_paiement = []
+    
+    # Récupérer tous les contrats actifs de type location
+    contrats_actifs = Location.objects.filter(
+        statut='actif',
+        type_operation='location'
+    ).select_related('client')
+    
+    for contrat in contrats_actifs:
+        # Vérification de l'expiration
+        if contrat.date_fin and today <= contrat.date_fin <= date_90_jours:
+            jours_restants = (contrat.date_fin - today).days
+            contrat.jours_restants = jours_restants
+            contrats_expiration.append(contrat)
+        
+        # Vérification des retards de paiement
+        dernier_paiement = Paiement.objects.filter(
+            location=contrat,
+            type_paiement='loyer'
+        ).aggregate(Max('date_paiement'))
+        
+        date_dernier_paiement = dernier_paiement['date_paiement__max']
+        
+        # Si aucun paiement ou dernier paiement > 30 jours
+        if not date_dernier_paiement:
+            # Jamais eu de paiement
+            contrat.jours_retard = (today - contrat.date_debut).days
+            contrat.dernier_paiement = None
+            contrats_retard_paiement.append(contrat)
+        elif (today - date_dernier_paiement).days > 30:
+            # Dernier paiement trop ancien
+            contrat.jours_retard = (today - date_dernier_paiement).days - 30
+            contrat.dernier_paiement = date_dernier_paiement
+            contrats_retard_paiement.append(contrat)
+    
+    # Trier les contrats par urgence
+    contrats_expiration.sort(key=lambda x: x.date_fin)
+    contrats_retard_paiement.sort(key=lambda x: x.jours_retard if x.jours_retard else float('inf'), reverse=True)
+    
+    # Préparer le contexte
     context = {
-        'revenus_mensuels': revenus_mensuels,
-        'revenus_ventes': revenus_ventes,
-        'biens_par_type': biens_par_type,
-        'clients_par_type': clients_par_type,
-        'total_proprietes': total_proprietes,
-        'total_biens': total_biens,
-        'total_tiers': total_tiers,
-        'locations_actives': locations_actives,
-        'dernieres_locations': dernieres_locations,
+        'total_proprietes': Propriete.objects.count(),
+        'total_biens': Beaux.objects.count(),
+        'total_locataires': Tiers.objects.filter(type='Locataire').count(),
+        'locations_actives': Location.objects.filter(statut='actif').count(),
+        'proprietes_recentes': Propriete.objects.order_by('-date_aquisition')[:5],
+        'locations_recentes': Location.objects.order_by('-created_at')[:5],
+        'contrats_expiration': contrats_expiration,
+        'contrats_retard_paiement': contrats_retard_paiement
     }
-
+    
     return render(request, 'gestion_immobiliere/dashboard.html', context)
 
 @login_required

@@ -1,10 +1,8 @@
 {% extends 'gestion_immobiliere/base.html' %}
-{% load tz %}
 
 {% block title %}Tableau de bord - Gestion Immobilière{% endblock %}
 
 {% block content %}
-
 <div class="container-fluid">
     <h1 class="mb-4">Tableau de bord</h1>
     
@@ -29,7 +27,7 @@
         <div class="col-md-3">
             <div class="card bg-info text-white">
                 <div class="card-body">
-                    <h5 class="card-title">Locataires</h5>
+                    <h5 class="card-title">Clients</h5>
                     <p class="card-text display-4">{{ total_locataires }}</p>
                 </div>
             </div>
@@ -59,27 +57,19 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Client</th>
-                                    <th>Date de fin</th>
+                                    <th>Bien</th>
+                                    <th>Date d'expiration</th>
                                     <th>Jours restants</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for contrat in contrats_expiration %}
-                                <tr class="{% if contrat.jours_restants <= 30 %}table-danger{% elif contrat.jours_restants <= 60 %}table-warning{% else %}table-info{% endif %}">
+                                <tr>
                                     <td>{{ contrat.id }}</td>
-                                    <td>{{ contrat.client.nom }}</td>
+                                    <td>{{ contrat.client.nom }} {{ contrat.client.prenom }}</td>
+                                    <td>{{ contrat.id_beaux.reference }}</td>
                                     <td>{{ contrat.date_fin|date:"d/m/Y" }}</td>
-                                    <td>
-                                        <span class="badge {% if contrat.jours_restants <= 30 %}bg-danger{% elif contrat.jours_restants <= 60 %}bg-warning{% else %}bg-info{% endif %}">
-                                            {{ contrat.jours_restants }} jours
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'location_detail' contrat.id %}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i> Détails
-                                        </a>
-                                    </td>
+                                    <td>{{ contrat.date_fin|timeuntil }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -106,40 +96,19 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Client</th>
-                                    <th>Dernier paiement</th>
+                                    <th>Montant dû</th>
+                                    <th>Montant payé</th>
                                     <th>Retard</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for contrat in contrats_retard_paiement %}
-                                <tr class="{% if not contrat.dernier_paiement %}table-danger{% elif contrat.jours_retard > 60 %}table-danger{% elif contrat.jours_retard > 30 %}table-warning{% else %}table-info{% endif %}">
+                                {% for contrat in contrats_en_retard %}
+                                <tr>
                                     <td>{{ contrat.id }}</td>
-                                    <td>{{ contrat.client.nom }}</td>
-                                    <td>
-                                        {% if contrat.dernier_paiement %}
-                                            {{ contrat.dernier_paiement|date:"d/m/Y" }}
-                                        {% else %}
-                                            <span class="badge bg-danger">Aucun paiement</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span class="badge {% if not contrat.dernier_paiement %}bg-danger{% elif contrat.jours_retard > 60 %}bg-danger{% elif contrat.jours_retard > 30 %}bg-warning{% else %}bg-info{% endif %}">
-                                            {% if contrat.jours_retard %}
-                                                {{ contrat.jours_retard }} jours
-                                            {% else %}
-                                                Jamais payé
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'location_detail' contrat.id %}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i> Détails
-                                        </a>
-                                        <a href="{% url 'ajouter_paiement' contrat.id %}" class="btn btn-sm btn-success">
-                                            <i class="fas fa-plus"></i> Paiement
-                                        </a>
-                                    </td>
+                                    <td>{{ contrat.client.nom }} {{ contrat.client.prenom }}</td>
+                                    <td>{{ contrat.montant_du|floatformat:0 }} XOF</td>
+                                    <td>{{ contrat.montant_paye|floatformat:0 }} XOF</td>
+                                    <td class="text-danger">{{ contrat.montant_retard|floatformat:0 }} XOF</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -154,33 +123,8 @@
         </div>
     </div>
 
-    <!-- Debug Info -->
-    {% if debug_info %}
+    <!-- Propriétés récentes -->
     <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">Informations de débogage</h5>
-                </div>
-                <div class="card-body">
-                    <p>Date aujourd'hui: {{ debug_info.today }}</p>
-                    <p>Date dans 90 jours: {{ debug_info.date_90_jours }}</p>
-                    <p>Total contrats: {{ debug_info.total_contrats }}</p>
-                    <p>Contrats dans les 90 jours: {{ debug_info.contrats_90j }}</p>
-                    <h6>Détails des contrats:</h6>
-                    <ul>
-                    {% for contrat in debug_info.contrats_details %}
-                        <li>ID: {{ contrat.id }} - Date fin: {{ contrat.date_fin|default:'Pas de date' }} - Statut: {{ contrat.statut }} - Client: {{ contrat.client }}</li>
-                    {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Propriétés et locations récentes -->
-    <div class="row">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -204,6 +148,7 @@
             </div>
         </div>
         
+        <!-- Locations récentes -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -214,10 +159,10 @@
                         {% for location in locations_recentes %}
                         <a href="#" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">Location #{{ location.id }}</h6>
-                                <small>{{ location.created_at|date:"d/m/Y" }}</small>
+                                <h6 class="mb-1">Location #{{ location.id_location }}</h6>
+                                <small>{{ location.date_paiement|date:"d/m/Y" }}</small>
                             </div>
-                            <p class="mb-1">{{ location.montant_location }} XOF / mois</p>
+                            <p class="mb-1">{{ location.prix_mensuel }} XOF / mois</p>
                         </a>
                         {% empty %}
                         <p class="text-muted">Aucune location récente</p>
